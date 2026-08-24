@@ -1,0 +1,3 @@
+{
+  "name":"arun-portfolio-backend","private":true,"version":"1.0.0","type":"module","scripts":{"dev":"node --watch src/server.js","start":"node src/server.js","seed":"node src/database/seed.js"},"dependencies":{"cors":"latest","dotenv":"latest","express":"latest","helmet":"latest","better-sqlite3":"latest"}
+}
