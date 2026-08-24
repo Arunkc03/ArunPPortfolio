@@ -1,0 +1,14 @@
+import 'dotenv/config';
+import express from 'express';import cors from 'cors';import helmet from 'helmet';import db from './database/db.js';
+const app=express();app.use(helmet());app.use(cors());app.use(express.json({limit:'100kb'}));
+const ok=(res,data)=>res.json({success:true,data});
+app.get('/api/health',(req,res)=>ok(res,{status:'ok'}));
+app.get('/api/projects',(req,res)=>ok(res,db.prepare('SELECT * FROM projects ORDER BY featured DESC, created_at DESC').all()));
+app.get('/api/projects/:id',(req,res)=>{const p=db.prepare('SELECT * FROM projects WHERE id=? OR slug=?').get(req.params.id,req.params.id);if(!p)return res.status(404).json({success:false,message:'Project not found'});ok(res,p)});
+app.post('/api/projects',(req,res)=>{const {title,slug,description,long_description,image,github_url,live_url,featured=0}=req.body;if(!title||!slug)return res.status(400).json({success:false,message:'title and slug are required'});const r=db.prepare('INSERT INTO projects(title,slug,description,long_description,image,github_url,live_url,featured) VALUES(?,?,?,?,?,?,?,?)').run(title,slug,description,long_description,image,github_url,live_url,featured?1:0);ok(res,{id:r.lastInsertRowid})});
+app.put('/api/projects/:id',(req,res)=>{const old=db.prepare('SELECT * FROM projects WHERE id=?').get(req.params.id);if(!old)return res.status(404).json({success:false,message:'Project not found'});const p={...old,...req.body};db.prepare('UPDATE projects SET title=?,slug=?,description=?,long_description=?,image=?,github_url=?,live_url=?,featured=? WHERE id=?').run(p.title,p.slug,p.description,p.long_description,p.image,p.github_url,p.live_url,p.featured?1:0,req.params.id);ok(res,{id:req.params.id})});
+app.delete('/api/projects/:id',(req,res)=>{const r=db.prepare('DELETE FROM projects WHERE id=?').run(req.params.id);if(!r.changes)return res.status(404).json({success:false,message:'Project not found'});ok(res,{deleted:true})});
+app.get('/api/skills',(req,res)=>ok(res,db.prepare('SELECT * FROM skills ORDER BY category,id').all()));app.get('/api/services',(req,res)=>ok(res,db.prepare('SELECT * FROM services ORDER BY id').all()));app.get('/api/experiences',(req,res)=>ok(res,db.prepare('SELECT * FROM experiences ORDER BY start_date DESC').all()));
+app.post('/api/contact',(req,res)=>{const {name,email,subject,message}=req.body;if(!name||!email||!message)return res.status(400).json({success:false,message:'Name, email and message are required'});const r=db.prepare('INSERT INTO contacts(name,email,subject,message) VALUES(?,?,?,?)').run(name,email,subject||'',message);ok(res,{id:r.lastInsertRowid,message:'Message sent successfully!'})});
+app.use((err,req,res,next)=>{console.error(err);res.status(500).json({success:false,message:'Internal server error'})});
+const port=process.env.PORT||5000;app.listen(port,()=>console.log(`API running on http://localhost:${port}`));
