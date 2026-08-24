@@ -1,22 +1,14 @@
-import React from "react";
+import React from 'react';
+import { portfolio } from '../data/portfolio';
 
-const Projects = () => {
-  return (
-    <section id="projects">
-      <div className="content">
-        <h2>Projects</h2>
-        <p>
-          Over the course of my learning and development journey, I have worked on a
-          variety of projects that demonstrate my skills and creativity. These include
-          a personal portfolio website, a Hospital Doctors Appointment System,
-          and a Task Management App. Each project presented unique challenges, from
-          building responsive layouts and dynamic interfaces to integrating backend
-          functionality and handling data efficiently. I document each project carefully
-          and continuously improve them to reflect the latest trends in web development.
-        </p>
+const Projects = () => (
+  <section id="projects">
+    <div className="content">
+      <p className="eyebrow">03 / SELECTED WORK</p><h2>Projects</h2>
+      <div className="projects-grid">
+        {portfolio.projects.map((project, i) => <article className="project" key={project.title}><p className="eyebrow">0{i + 1}</p><h3>{project.title}</h3><p>{project.description}</p><div className="tags">{project.stack.map(item => <span className="tag" key={item}>{item}</span>)}</div></article>)}
       </div>
-    </section>
-  );
-};
-
+    </div>
+  </section>
+);
 export default Projects;
